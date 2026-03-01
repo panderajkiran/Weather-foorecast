@@ -1,12 +1,20 @@
 const express = require("express");
 const axios = require("axios");
 const path = require("path");
+const fs = require("fs");
 const app = express();
 const port = 4000;
 
-// Set EJS as view engine, serve static if needed (not used here)
+// Set EJS as view engine with proper path resolution for Vercel
+const viewsPath = process.env.VERCEL
+  ? path.join(__dirname)
+  : path.join(__dirname, ".");
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, ".")); // index.ejs in same folder
+app.set("views", viewsPath);
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", async (req, res) => {
   try {
@@ -31,8 +39,8 @@ app.get("/", async (req, res) => {
       time: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     });
   } catch (err) {
-    console.error("Weather API Error:", err.message);
-    res.render("index", {
+    console.error("Weather API Error:", err.message || err);
+    res.status(500).render("index", {
       temp: "N/A",
       feels: "N/A",
       wind: "N/A",
@@ -40,6 +48,11 @@ app.get("/", async (req, res) => {
       time: new Date().toLocaleString("en-IN"),
     });
   }
+});
+
+// Health check endpoint for Vercel monitoring
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 function getWeatherDesc(temp, precip) {
