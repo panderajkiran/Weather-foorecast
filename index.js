@@ -49,6 +49,10 @@ function getWeatherDesc(temp, precip) {
   return "Sunny ☀️";
 }
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+if (process.env.VERCEL !== "1") {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
+
+module.exports = app;
